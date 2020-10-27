@@ -50,7 +50,7 @@ set_target_properties(iiod PROPERTIES
 	C_STANDARD_REQUIRED ON
 	C_EXTENSIONS OFF
 )
-target_link_libraries(iiod iio ${PTHREAD_LIBRARIES} ${AVAHI_LIBRARIES})
+target_link_libraries(iiod libiio ${PTHREAD_LIBRARIES} ${AVAHI_LIBRARIES})
 
 if (ENABLE_AIO)
 	add_definitions(-DWITH_AIO=1)

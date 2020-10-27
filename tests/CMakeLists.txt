@@ -28,7 +28,7 @@ if (CMAKE_COMPILER_IS_GNUCC)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DIIO_CHECK_RET")
 endif()
 add_library(iio_tests_helper STATIC iio_common.c gen_code.c)
-target_link_libraries(iio_tests_helper iio)
+target_link_libraries(iio_tests_helper libiio)
 
 add_executable(iio_genxml  iio_genxml.c   ${GETOPT_C_FILE} ${LIBIIO_RC})
 add_executable(iio_info    iio_info.c     ${GETOPT_C_FILE} ${LIBIIO_RC})
@@ -37,12 +37,12 @@ add_executable(iio_readdev iio_readdev.c  ${GETOPT_C_FILE} ${LIBIIO_RC})
 add_executable(iio_reg     iio_reg.c      ${GETOPT_C_FILE} ${LIBIIO_RC})
 add_executable(iio_writedev iio_writedev.c  ${GETOPT_C_FILE} ${LIBIIO_RC})
 
-target_link_libraries(iio_genxml  iio iio_tests_helper)
-target_link_libraries(iio_info    iio iio_tests_helper)
-target_link_libraries(iio_attr    iio iio_tests_helper)
-target_link_libraries(iio_readdev iio iio_tests_helper)
-target_link_libraries(iio_reg     iio iio_tests_helper)
-target_link_libraries(iio_writedev iio iio_tests_helper)
+target_link_libraries(iio_genxml  libiio iio_tests_helper)
+target_link_libraries(iio_info    libiio iio_tests_helper)
+target_link_libraries(iio_attr    libiio iio_tests_helper)
+target_link_libraries(iio_readdev libiio iio_tests_helper)
+target_link_libraries(iio_reg     libiio iio_tests_helper)
+target_link_libraries(iio_writedev libiio iio_tests_helper)
 
 set(IIO_TESTS_TARGETS iio_genxml iio_info iio_attr iio_readdev iio_reg iio_writedev)
 
@@ -51,8 +51,8 @@ if(PTHREAD_LIBRARIES)
 	project(iio_stresstest C)
 	add_executable(iio_adi_xflow_check iio_adi_xflow_check.c)
 	add_executable(iio_stresstest iio_stresstest.c)
-	target_link_libraries(iio_adi_xflow_check iio iio_tests_helper ${PTHREAD_LIBRARIES})
-	target_link_libraries(iio_stresstest iio iio_tests_helper ${PTHREAD_LIBRARIES})
+	target_link_libraries(iio_adi_xflow_check libiio iio_tests_helper ${PTHREAD_LIBRARIES})
+	target_link_libraries(iio_stresstest libiio iio_tests_helper ${PTHREAD_LIBRARIES})
 	set(IIO_TESTS_TARGETS ${IIO_TESTS_TARGETS} iio_adi_xflow_check iio_stresstest)
 
 	target_link_libraries(iio_readdev  ${PTHREAD_LIBRARIES})
@@ -65,13 +65,15 @@ set_target_properties(${IIO_TESTS_TARGETS} PROPERTIES
 	C_EXTENSIONS OFF
 )
 
-if(NOT SKIP_INSTALL_ALL)
+foreach(tool ${IIO_TESTS_TARGETS})
 	if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-		install(TARGETS ${IIO_TESTS_TARGETS} RUNTIME DESTINATION ${OSX_INSTALL_FRAMEWORKSDIR}/iio.framework/Tools)
+		install(TARGETS ${tool} EXPORT ${tool}Targets
+				RUNTIME DESTINATION ${OSX_INSTALL_FRAMEWORKSDIR}/libiio.framework/Tools)
 	else()
-		install(TARGETS ${IIO_TESTS_TARGETS} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+		install(TARGETS ${tool} EXPORT ${tool}Targets
+				RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 	endif()
-endif()
+endforeach()
 
 # Make the test targets available to the main CMakeLists.txt
 set(IIO_TESTS_TARGETS ${IIO_TESTS_TARGETS} PARENT_SCOPE)
